@@ -24,7 +24,9 @@
 \RequirePackage[backend=biber,sorting=none,bibstyle=ieee]{biblatex}  % reference manager
 \RequirePackage[toc,page]{appendix}  % for appendices
 \RequirePackage[normalem]{ulem}  % for underlining text
-\RequirePackage{url} % in case explicit URL's are needed
+
+\RequirePackage{url}
+
 \RequirePackage{siunitx} % several functions related to expressing units
 \RequirePackage[bookmarks=true,hidelinks]{hyperref} % should be last(ish)
 \RequirePackage{bookmark} % allows reformatting of pdf bookmarks
@@ -121,7 +123,7 @@
     \titlespacing*{\chapter}
       {0pt}{0pt}{30pt}	% controls vertical margins on title
     \titleformat{\section}{\normalfont\bfseries}{\thesection}{1em}{##1}
-    \titleformat{\subsection}{\normalfont}{\uline{\thesubsection}}{0em}{\uline{\mbox{\hspace{1em}}##1}}
+    \titleformat{\subsection}{\normalfont\bfseries}{\thesubsection}{1em}{##1}
     \titleformat{\subsubsection}{\normalfont\itshape}{\thesubsection}{1em}{##1}
 }%
 {

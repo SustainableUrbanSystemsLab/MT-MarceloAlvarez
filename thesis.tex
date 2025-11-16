@@ -8,16 +8,37 @@
 \approvaldate{January 1, 2020}
 \school{College of Design}
 \department{School of Architecture}
-\degree{Master of Science in Design Computation} 
+\degree{Master of Science in Architecture} 
 \bibliography{references}
+
+\usepackage[table]{xcolor}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{csquotes}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{placeins}
+
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  %backgroundcolor=\color{gray!10},
+  %frame=single,
+  breaklines=true,       % <<--- important
+  postbreak=\mbox{\textcolor{gray}{$\hookrightarrow$}\space},
+  columns=flexible
+}
+
 
 % document body
 \begin{document}
 
 \makeTitlePage{Dec}{2025}
 \input{approvalPage.tex}
-\makeEpigraph{I'm not super. Any talents I have, I worked for -- it seems a long time since I thought of myself as a hero.}{Oliver Queen}
-\makeDedication{For my cousin Kara}
+\makeEpigraph{Epigraph later, maybe not}{author goes here}
+\makeDedication{Dedication goes here, update later}
 
 \begin{frontmatter}
     \input{acknowledgments}
@@ -31,9 +52,9 @@
 \begin{thesisbody}
     \input{chapters/chapter1}
     \input{chapters/chapter2}
-    % \input{chapters/chapter3}
-    % \input{chapters/chapter4}
-    % \input{chapters/chapter5.tex}
+    \input{chapters/chapter3}
+    \input{chapters/chapter4}
+    \input{chapters/chapter5}
     \input{chapters/appendix.tex}
     \makeBibliography
 \end{thesisbody}

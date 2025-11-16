@@ -1,30 +1,65 @@
 
 \chapter{Introduction and Background}
 
-\section{Stars}
+As urbanization continues to accelerate globally, cities face increasing challenges from the \gls{uhi} effect. This phenomenon occurs when urban areas experience significantly higher temperatures compared to surrounding rural areas, primarily due to dense built environments, reduced vegetation cover, and extensive impervious surfaces \cite{visvanathan_mitigating_2024}. The \gls{uhi} effect is further intensified by more frequent heatwaves and ongoing climate change, creating serious concerns for thermal comfort and public health in urban environments. In this regard, poor climate-sensitive design can substantially impact urban livability, as people tend to avoid public spaces when conditions are too hot, cold, or windy. Effective \gls{uhi} mitigation requires comprehensive approaches that include increasing vegetation cover, implementing green infrastructure, using reflective materials, and improving building energy performance \cite{ahmed_optimizing_2024}.
 
-It is common knowledge that the star closest to Earth is the Sun, and also that the Sun is yellow. It is this yellow sunlight which is interesting for some of its properties \cite{scholes2011lessons}. For instance, plants, algae, and cyanobacteria convert this light into energy via photosynthesis. In \ref{fig:firstFig} is a photo of a galaxy which contains many stars.
+The role of vegetation cover helps to reduce air temperature by keeping surface temperatures cooler by preventing direct solar radiation. Furthermore, the effect of evapotranspiration converts energy to latent heat flux through the stomata of leaves \cite{pace_single_2021}. Although vegetation evapotranspiration lowers air temperature, it simultaneously increases local humidity. The rise in air humidity can sometimes offset the temperature reduction, impacting human thermal comfort by increasing the wet bulb temperature. Another key component in the air temperature cooling effect is wind speed. Higher wind speeds improve convective and evaporative cooling, intensifying the temperature reducing effects of areas with vegetation. However, dense vegetation (or urban infrastructure) can potentially block natural breezes, reducing the temperature cooling effect.
 
-\begin{figure}[ht]
-    \centering
-	\includegraphics[width=0.85\textwidth]{figures/sampleFig1.jpg}
-	\caption[Barred spiral galaxy NGC 1300]{Barred spiral galaxy NGC 1300 photographed by Hubble telescope. While the galaxy in the photo is not our sun, it does emit light, much like our sun. Image credit: NASA.}
-	\label{fig:firstFig}
-\end{figure}
+Understanding and ultimately predicting the scale of the neighborhood and district becomes crucial to developing targeted interventions. For this purpose, \gls{cfd} analysis has become an important tool for simulating and evaluating microclimate scenarios at this scale. \gls{cfd} tools enable data-driven urban design approaches that prioritize climate resilience and support more informed decision-making processes through simulations \cite{schneider_pitfalls_2023, yamasaki_microclimate_2024}. However, the effectiveness of these simulations depends on the accuracy of the tool in representing real-world conditions and their ability to account for complex interactions between built and natural elements in urban environments. Such tools should be able to represent both the existing and proposed conditions for building materials and the cooling effects of trees and greenery bodies.
 
-The stars in the sky are of particular interest to the aptly named \gls{starlabs}, which in many recent experiments has shown promising results in converting this energy in a non-photoelectric sense into usable energy \cite{allen2019fast}. Interestingly, \gls{starlabs} has theorized that the famous superhero known as ``Superman'' converts the light from our sun, which grants his fantastic abilities. There are many methods in industry for converting the sun's energy (of about \SI{1000}{\watt\per\meter\squared}) into electrical energy. Some of these are highlighted in \ref{tbl:sampleTbl1}.
+\section{Role and effects of trees in urban microclimate}
 
-\begin{table}[ht]
-\centering
-\caption[Selected renewable energy installations]{Renewable energy installations around the world -- the energy generated at these sites is ultimately derived from the sun}
-\label{tbl:sampleTbl1}
-\resizebox{0.8\textwidth}{!}{%
-\begin{tabular}{llll}
-\hline
-installation & type & capacity (GW) & location \\ \hline
-Longyangxia Dam & photovoltaic & 0.85 & China \\
-Gansu Wind Farm & wind & 6 & China \\
-Sihwa Lake & tidal & 0.254 & South Korea \\ \hline
-\end{tabular}%
-}
-\end{table}
+One of the most direct and effective ways to reduce air temperatures is the natural cooling effect of trees'. This cooling effect is achieved by preventing both solar radiation on surfaces and the evapotranspiration of leaves. However, the cooling effect is not straightforward: it is linked to the ambient conditions (e.g., water availability) and urban context (i.e., climate zones and cities). According to Rötzer et al. \cite{rotzer_process_2019}, Manickathan et al. \cite{manickathan_conjugate_2017}, and Meili et al. \cite{meili_tree_2021}, the stomata of the leaves closes with insufficient water supply, reducing the cooling effect of evapotranspiration. Furthermore, high relative humidity climates significantly reduce the cooling effect of vegetation through evapotranspiration.
+
+The cooling magnitude of the air temperature varies depending on the location settings and the climate conditions. Other researchers reported air temperature values decreasing from 'not significant' up to 2 ºC:
+
+\begin{itemize}
+    \item Decrease of 0.7 – 1.5 in Gothenburg \cite{konarska_transpiration_2016}
+    \item Decrease of 0.5 - 1.0 in Negev Highlands \cite{shashua-bar_cooling_2009}
+    \item Decrease of 2 in Phoenix, Arizona \cite{middel_impact_2016}
+    \item Marginal decrease in Manchester, UK \cite{armson_comparison_2013}
+\end{itemize}
+
+As mentioned, the vegetation cooling effect is not straightforward. Tan et al. \cite{tan_evaluating_2022} found that the vegetation cooling performance is not linearly related to tree coverage. Furthermore, high vegetation density produces a blocking effect, lowering the effectiveness on thermal comfort improvement in street canyon settings \cite{kianmehr_quantifying_2022}. The researchers found that dense vegetation did not decrease the \gls{utci} level in shallow canyon settings. However, deeper canyons resulted in \gls{utci} decrement with similar dense vegetation conditions. Huo and Chen \cite{huo_study_2024} vegetation cooling effects into two categories: direct cooling effects and indirect cooling effects. On one hand, direct cooling effects include the plant evapotranspiration, and the solar radiation absorption due to photosynthesis. On the other hand, indirect cooling effects include leaf shielding and reflection, and heat transfer enabled by the temperature difference between the area under trees and the surrounding areas.
+
+\section{Microclimate simulation tools}
+
+%introduction, mention other tools, cfd, etc.
+%add comparative table of tools
+
+\subsection{RAYMAN}
+
+\subsection{SOLWEIG}
+
+\subsection{OTHER}
+
+\subsection{ENVI-met}
+
+ENVI-met is a three-dimensional microclimate simulation software developed by Bruse and Fleer \cite{bruse_simulating_1998}. This software cover scientific disciplines from fluid dynamics and thermodynamics, to plant physiology and soil science \hyperlink{https://envi-met.com/microclimate-simulation-software/}{(envi-met.com)}. The main features of ENVI-met included solar analysis, pollutant dispersion, building physics, green and blue technologies, wind flow, outdoor thermal comfort, vegetation analysis, and humidity. It allows the user to assess solar radiation exposure for building facades including vegetation environmental factors. Additionally, ENVI-met offers detailed environmental analysis including trees and wind flow patterns.
+
+ENVI-met uses an orthogonal Arakawa C-grid for the simulation domain 3D model and the Finite Difference Method to solve the partial differential equations \cite{salata_urban_2016}. By implementing a fully implicit scheme, ENVI-met is capable of using relatively large time steps while remaining numerically stable. However, ENVI-met presents the limitation of only updating air temperature and relative humidity boundary conditions during the simulation process \cite{acero_comparison_2015}. Researches have focused on testing and validating ENVI-met simulation results against real-world measured data. Regardless of inherent microclimate model's limitations, ENVI-met is considered the adequate state-of-the-art tool for studying micro-climatic conditions \cite{chow_observing_2011, chow_assessing_2012, emmanuel_urban_2007}.
+
+ENVI-met is considered as a well-established microclimate simulation software, used by many researchers aiming to compare and validate the accuracy of simulation results. Studies consists of comparison between simulation data to micro-meteorological station data, comparing ENVI-met results to observed conditions in urban settings. Simulation results hardly are a perfect match due to each models' limitations. One of the most relevant techniques to measure simulation results validity against real-world data is the Willmott's Index of Agreement (d). Using the Willmott's Index of Agreement over correlation-based performance is preferred: correlation often shows good predictors when they are not \cite{petri_planning_2019}.
+
+Several studies have found relevant insights into the simulation results given by ENVI-met. These simulation results accuracy may vary depending on the forcing conditions and meteorological conditions used for simulation \cite{salvati_microclimate_nodate}. Findings in related studies found either overestimation or underestimation of measurements. For example, Le and Chan \cite{le_comparison_2023} state that applying greenery overestimates its cooling effect. Adelia et al. \cite{adelia_tool_2020} compares ENVI-met wind flow with ANSYS Fluent results, finding that ENVI-met does not fully capture turbulence flows generated by building elements. Studies comparing ENVI-met against air temperature measurements show a high value of d=0.8 \cite{koletsis_validation_nodate}. However, the authors report high \gls{rmse} and \gls{mae} values for relative humidity, indicating possible errors in the ENVI-met simulation process. They also obtained a low agreement value of d=0.5 for wind speed, arguing that ENVI-met cannot incorporate real-world wind speed and direction.
+
+More comprehensive calculations include values for the \gls{mrt}. Researches found that ENVI-met models tend to overestimate the daytime shortwave radiation values except peak values at midday \cite{acero_comparison_2015, huttner_further_2012, salata_urban_2016, sharmin_microclimatic_2017}. Also, the assumption of a static sky condition and steady wind profile results in excluding transient clouds. Considering constant cloud cover affects the deviation between modeled and experimentally calculated \gls{mrt} \cite{acero_comparison_2015, morakinyo_thermal_2019, salata_urban_2016}. Regarding wind flow dynamics, ENVI-met is rarely evaluated for its ability to reproduce wind speed profiles. Given an initial wind speed direction and magnitude, it remains almost constant during the simulation process. As a result, ENVI-met tends to overestimate wind speed values, with considerably higher differences for wind speed initialized above 2 m/s \cite{acero_evaluating_2018, kruger_impact_2011}.
+
+\section{General problem}
+
+Urban areas are increasingly affected by the \gls{uhi} effect, driven by rapid urbanization, climate change, and more frequent heatwaves. Vegetation can provide cooling, but its effects are highly context-dependent, making it difficult to quantify. Predicting microclimate conditions at the neighborhood and district scale is challenging because Computational Fluid Dynamics (\gls{cfd}) tools must balance accuracy, complexity, and practicality.
+
+\section{Specific problem and objectives}
+%research hypothesis?
+%research aim
+%objectives follow the aim
+
+The main goal of microclimate simulation tools is to appropriately and accurately represent real-life scenarios. However, these tools tend to differ in the accuracy of simulation results due to assumptions, boundary conditions, simplifications, and limitations in either the geometry representation or the solving models. Ideally, simulation results should be compared against real measurements relying on highly accurate weather stations or high-resolution sensors. There is a significant challenge when no real measurements are available, requiring the use of other well-established microclimate simulation tools as "source of truth".
+
+Existing microclimate simulation tools have limitations that hinder reliable \gls{uhi} and vegetation cooling predictions. ENVI-met, while widely used and validated, shows systematic biases in wind speed, radiation, vegetation cooling estimation, and under-represents turbulence and transient meteorological variations. This study uses ENVI-met to explore, compare, and ultimately calibrate the Outdoor+ plugin that handles the urbanMicroclimateFoam solver. The urbanMicroclimateFoam solver offers high-fidelity geometrical representation and multi-physics modeling but lacks a built-in user interface for pre-processing and post-processing. Since direct comparisons with real-world measurements are often infeasible, there is a need to benchmark Outdoor+, the Grasshopper plugin that operates the urbanMicroclimateFoam solver against established tools like ENVI-met. 
+
+\section{Thesis structure}
+
+The structure of this thesis is organized into five chapters. Chapter 1 introduces the research background for urban microclimate conditions and simulation approaches, including the general and specific problem. Chapter 2 presents the methodology which consists of three case studies: stadium typology, educational center typology, and urban infrastructure typology. The methodology section describes meteorological inputs, geometry pre-processing, simulation settings, data collection procedures, and statistical analysis for agreement between ENVI-met and Outdoor+. Chapter 3 describes the simulation and statistical results of the three case studies, that consists of heatmaps and tabular data for air temperature, specific humidity, and wind speed. Chapter 4 discusses the implications of the agreement and differences in air temperature, specific humidity, and wind speed, testing Outdoor+ performance as "predicted" data against ENVI-met "observed" data. Chapter 5 concludes the thesis with a summary of key contributions and recommendations for future work.
+
+
