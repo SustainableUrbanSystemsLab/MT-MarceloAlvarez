@@ -1,6 +1,80 @@
-
 \begin{summary}
 
-There has been much speculation on whether or not efficient conversion of solar light to energy will have a breakthrough which enables high efficiency, low cost, and enabling of other capabilities previously not thought possible, whether through cellular means, semiconductor based, or otherwise. This work aims to answer some of the questions surrounding these matters.
+Cities face increasing challenges from the \gls{uhi} effect. Reduced vegetation cover and extensive impervious surfaces in dense built environments create significantly higher temperatures compared to surrounding rural areas. Factors that contribute to UHI include building mass, building orientation, heat absorption, and material properties. Understanding the complex interactions that create this phenomenon is crucial for designers and decision-makers to accurately address these factors in urban microclimate settings. Designers and researchers rely on specialized tools to model and analyze urban microclimate, requiring accurate representation of fine-scale interactions, computational efficiency, and robust geometry modeling workflows.
+
+This thesis presents a comparative study between the two microclimate tools ENVI-met and Outdoor+. ENVI-met is a well-established state-of-the-art software widely used and validated against field measurements for air temperature, solar radiation, thermal comfort, and vegetation-related interactions. However, existing literature presents limitations regarding wind speed simulation, turbulence representation, and humidity dynamics. Outdoor+ is the user interface plugin streamlining the use application of urbanMicroclimateFoam solver, an open-source multi-region coupled physical solver based on OpenFOAM. Its main features include solving for steady-state airflow and capturing the unsteady transport of heat, air, and moisture with computational efficiency. However, this solver presents limitations such as a steep learning curve, high mesh quality sensitivity, limited vegetation modeling, and lack of native parametric environment embedding.
+
+Outdoor+ integrates the solver into a 3D modeling and parametric environment, exposes primary inputs through visual programming, and avoids text-based editing. This comparative study uses ENVI-met and Outdoor+ to simulate air temperature, specific humidity, and wind speed for two case studies: a stadium and an educational center. The objective is shifting from current state-of-the-art to more advanced and customizable microclimate simulation tools with higher accuracy in fine-scale representations, greater parametric flexibility, and improved computational efficiency.
+
+The comparative study consists of two categories: a probing point time-series comparison and a full-domain statistical comparison. The probing point comparison uses qualitative analysis at human height across open, exposed, covered, corridor, and entrance conditions. The full-domain comparison relies on statistical indicators including the Willmott’s Index of Agreement, the Coefficient of Determination, the Root Mean Squared Error, and the Mean Absolute Error, supported by scatter plot analysis.
+
+Results include heatmaps, statistical agreement analysis, scatter plots, and timeline plots for air temperature, specific humidity, and wind speed for both case studies. Across both the stadium and educational center, air temperature presents weak-to-moderate agreement between tools, while specific humidity and wind speed show poor agreement. Outdoor+ captures a wider variability and stronger sensitivity to geometry and boundary conditions, while ENVI-met produces more uniform distributions, particularly for wind speed. Outdoor+ follows the EPW boundary reference values more closely for air temperature and humidity, whereas ENVI-met presents reduced temporal and spatial variation. Wind speed results reveal substantial disagreement, with Outdoor+ capturing a wider range of magnitudes and stronger fluctuations, while ENVI-met remains nearly constant across the domain.
+
+The main potential sources of disagreement include solver physics, boundary condition treatment, and model resolution, as well as differences in sensitivity to geometry, shading, vegetation, and fine-scale aerodynamics. Outdoor+ demonstrates better capturing of fine-scale microclimate interactions, while ENVI-met simplifies humidity and wind representation. The most unexpected finding is the magnitude of discrepancy in specific humidity and wind speed results.
+
+This comparative study has limitations, including the restriction to raw microclimate indicators, the use of only two case studies, and the exclusion of soil profiles and custom terrain. Generalization is therefore limited across urban typologies and climates. Future work should expand to diverse climate zones and include human-centered metrics such as MRT, UTCI, and PET, as well as soil and terrain modeling to improve tool matching.
+
+In conclusion, this thesis presented a comparative study between Outdoor+ and ENVI-met focusing on raw microclimate indicators. By harmonizing simulation settings, the performance of each solver was isolated, allowing exploration of fine-scale interactions in complex urban environments. The main contribution is presenting Outdoor+ as a feasible and flexible design tool for analyzing advanced urban microclimate patterns. Tool selection must balance accuracy, computational efficiency, and usability.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%importance of the topic
+%problem and it introduces the other topic
+%challenges
+%solutions
+%
+
+
+%introduiction
+%background
+%prpblem 1, problem 2
+%fix the problem, what others are doing
+%consistent with the summary
+
+
+%not building my case
+%why do we care?
+%different title?
+%what should we use envimet for, and outdoorplus for
+%this should be in summary and introduction early enough
+%OUTDOORPLUS IS THE NEW TOOL
+
+
+%envimet
+%enmvimet does this things well
+%challenges
+%outdoorplus
+%doees this and that
+%challenges
+%new tool outdoorplus
+%does these things well
+
+%our focus to compare envimet and outdoor pluis and to show the new toool and how...
+
+%motivated by these challenges, our research aims to...
+
+%talking about vegetation effects and cfd, physics does not help building my case
+
+%
+
 
 \end{summary}

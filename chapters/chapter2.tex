@@ -1,33 +1,135 @@
 \chapter{Methodology}
-%general description of the methodology
 
-%ADD EQUATIONS and CITE
-%ask Sina, it's a conference presentation
+This comparative study explores the capabilities of the Outdoor+ tool for modeling and simulating case studies with different scale and resolution, compared to ENVI-met as the state-of-the-art tool. Both Outdoor+ and ENVI-met environments require an \gls{epw} file to inform the solver's execution process with input data. The \gls{epw} file contains weather information including temperature and humidity stored in a data dictionary according to the Climate.OneBuilding repository of Building Simulation Climate Data\footnotemark[1]. In addition, both simulation tools require an input 3D model with a \gls{lod}  of 100, considering building and tree elements. Due to the nature of the ENVI-met simulation capabilities, these models include geometry definitions for soil surfaces and a \gls{dem} for terrain. Results include simulation results for temperature, specific humidity and wind speed (both dataset and heatmaps), and the statistical analysis for overall agreement between the observed results (ENVI-met) and the predicted results (Outdoor+). The next sections describe the physics model for the urbanMicroclimateFoam (manipulated by Outdoor+) and ENVI-met model architecture description. \ref{fig_generalmethodology} illustrates the comparative study workflow. The input model and parameters are defined in the Rhinoceros/Grasshopper environment, including both models' simulation settings, 3D models, and weather files. The same simulation settings are used to run the simulations, using the ENVI-met fixed grid as probing point dataset. This point collection ensures the same probing location for ENVI-met and Outdoor+. Lastly, simulation results use the post-processing method to compute the statistical analysis, and generate the Outdoor+ and ENVI-met heatmap figures.
 
-This comparative study explores the capabilities of the Outdoor+ tool for modeling and simulating case studies with different scale and resolution, compared to ENVI-met as the state-of-the-art tool. Both Outdoor+ and ENVI-met environments require an \gls{epw} file to inform the solver's execution process with input data. The \gls{epw} file contains weather information including temperature and humidity stored in a data dictionary according to the Climate.OneBuilding repository of Building Simulation Climate Data (\hyperlink{https://climate.onebuilding.org/}{https://climate.onebuilding.org/}. In addition, both simulation tools require an input 3D model with a \gls{lod}  of 100, considering building and tree elements. Due to the nature of the ENVI-met simulation capabilities, these models include geometry definitions for soil surfaces and a \gls{dem} for terrain. Results include output geometry, simulation results for temperature, specific humidity and wind speed (both dataset and heatmaps), and the statistical analysis for overall agreement between the observed results (ENVI-met) and the predicted results (Outdoor+).
-%add linkds as footnotes
+\footnotetext[1]{\url{https://climate.onebuilding.org/}}
 
 \begin{figure}[H]
     \centering    
-    \caption{Methodology workflow: input model and parameters is pre-processing, simulation model and solver is both the Outdoor+ and ENVI-met simulations, and simulation results and post-processing is the visual results generation, the dataset creation and the statistical analysis.}
     \includegraphics[width=1\linewidth]{figures/General_Methodology.jpg}
+    \caption[Methodology workflow]{Methodology workflow: input model, simulation model, and simulation results.}
     \label{fig_generalmethodology}
+\end{figure}
+
+\section{urbanMicroclimateFoam model architecture}
+%umcf description, equations
+The urbanMicroclimateFoam solves for air and solid regions, including four modules with extended functionality: (1) CFD model for the air region, (2) HAM model for materials in buildings region, (3) RAD model solving for radiative heat fluxes, and (4) VEG model representing heat balance for the vegetation region \cite{ethzHomeWiki}. The CFD model uses steady Reynolds-averaged Navier-Stokes (RANS) for airflow (Equation 2.1 and 2.2), enthalpy (Equation 2.3), and air humidity (Equation 2.4):
+
+\begin{equation}
+    \nabla\cdot(\rho u)=0
+\end{equation}
+
+\begin{equation}
+    \rho(u \cdot \nabla)u = -\nabla p + \nabla\cdot(\tau+\tau_t) + \rho g + s_u
+\end{equation}
+
+\begin{equation}
+    \rho(u \cdot \nabla)h + \rho(u \cdot \nabla)K = -\nabla \cdot (q + q_t) + s_h
+\end{equation}
+
+\begin{equation}
+    \rho(u \cdot \nabla)w = -\nabla \cdot (g + g_t) + s_w
+\end{equation}
+
+Additionally, the HAM module uses the following governing equations for material heat and moisture storage (Equation 2.5) and HAM solid materials (Equation 2.6) \cite{JANSSEN20071128}:
+
+\begin{equation}
+    \left( c_0 \rho_0 + c_l w_s \right)\, \frac{\partial T}{\partial t}
+= - \nabla \left( q_c + q_a \right)
+\end{equation}
+
+\begin{equation}
+    \frac{\partial w_s}{\partial p_c}\, \frac{\partial p_c}{\partial t}
+= - \nabla \left( g_l + g_v \right)
+\end{equation}
+
+The urbanMicroclimateFoam is a coupled solver, integrating both air and solids regions using the \textit{mappedWall} OpenFOAM patch type. The data exchange occurs at each simulation timestep, where the CFD and the HAM modules use the converged data for the other's model next timestep.
+
+\section{ENVI-met model architecture}
+%envimet model description, higher level
+The ENVI-met platform is established as the state-of-the-art, standard urban microclimate simulation and analysis tool. This tool is particularly well-known for its vegetation modeling capabilities. The core urban microclimate modeling capabilities rely on computational fluid dynamics fundamentals and atmospheric physics. Hence, ENVI-met can solve wind flow, air temperature, specific humidity, and radiation \cite{Simon_2016}. 
+
+ENVI-met uses the Boussinesq approximation for incompressible flow (Equation 2.7, 2.8, 2.9, 2.10):
+
+\begin{equation}
+    \frac{\partial u}{\partial t}
++ u_i \frac{\partial u}{\partial x_i}
+= -\frac{\partial p}{\partial x}
++ K_m \frac{\partial^2 u}{\partial x_i^2}
++ f (v - v_g) + S_u
+\end{equation}
+
+\begin{equation}
+    \frac{\partial v}{\partial t}
++ u_i \frac{\partial v}{\partial x_i}
+= -\frac{\partial p}{\partial y}
++ K_m \frac{\partial^2 v}{\partial x_i^2}
+- f (u - u_g) + S_v
+\end{equation}
+
+\begin{equation}
+    \frac{\partial w}{\partial t}
++ u_i \frac{\partial w}{\partial x_i}
+= -\frac{\partial p}{\partial z}
++ K_m \frac{\partial^2 w}{\partial x_i^2}
++ g\,\frac{\theta(z)-\theta_{\mathrm{ref}}(z)}{\theta_{\mathrm{ref}}(z)}
++ S_w
+\end{equation}
+
+\begin{equation}
+    \frac{\partial u}{\partial x}
++ \frac{\partial v}{\partial y}
++ \frac{\partial w}{\partial z}
+= 0
+\end{equation}
+
+For potential air temperature and specific humidity, ENVI-met uses atmospheric moisture (Equation 2.11 and 2.12):
+
+\begin{equation}
+    \frac{\partial q}{\partial t}
++ u_i \frac{\partial q}{\partial x_i}
+= K_q (\frac{\partial^2 q}{\partial x_i^2})
++ Q_q
+\end{equation}
+
+\begin{equation}
+    \frac{\partial \theta}{\partial t}
++ u_i \frac{\partial \theta}{\partial x_i}
+= K_\theta (\frac{\partial^2 \theta}{\partial x_i^2})
++ \frac{1}{c_pP}
+\frac{\partial Q_{\mathrm{lw}}}{\partial z}
++ Q_\theta
+\end{equation}
+
+\section{Outdoor+ Grasshopper plugin architecture}
+%plugin description
+In this comparative study, we operate the urbanMicroclimateFoam solver through the Outdoor+ Grasshopper plugin 0.0.19-beta version. This plugin consists of six categories: Air, Building, Simulation, Terrain, Vegetation, and Visualization. The Air category contains the required components to setup the air region. Similarly, the Building category includes components to setup buildings geometries and material properties. The simulation category contains all the components that control the simulation setup. To control the simulation, the Grasshopper definition uses the core UrbanMicroClimateFoam Case component, which receives all the other components required to write the urbanMicroclimateFoam OpenFOAM case. This version also includes the Terrain category, however, this comparative study does not utilize a terrain region due to this version's development limitations. The Vegetation category serves the same purpose that the Building category, defining the vegetation geometry and the vegetation model properties. The last Visualization category is a set of utility components that render the OpenFOAM geometry in Grasshopper. \ref{fig:outdoorplus_maingrasshopper} shows the Outdoor+ Grasshopper definition with region definition, simulation setup, case creation, and case running.
+
+A correct simulation requires high quality input geometry. Outdoor+ works with \gls{brep} and mesh geometries, leveraging built-in Grasshopper utilities such as the TriMesh component. On the other hand, ENVI-met does not require a comprehensive 3D modeling process. ENVI-met takes the input geometry and populates its own voxel-like transformation, overriding the input geometry. With this in consideration, a carefully 3D modeled Outdoor+ geometry works seamlessly for the ENVI-met platform. The following section describes the overall geometry preparation process for Outdoor+ and ENVI-met simulation platforms.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.4\linewidth, angle=90]{figures/main.jpg}
+    \caption[Outdoor+ 0.0.19-beta Grasshopper definition.]{Outdoor+ version 0.0.19-beta Grasshopper definition: Air region, Buildings region, Vegetation region, Timing settings, Simulation settings, Mesh settings, Box Domain dimensions, urbanMicroclimateFoam Case, and Case Run.}
+    \label{fig:outdoorplus_maingrasshopper}
 \end{figure}
 
 \section{Geometry preparation}
 %universal rhino preparation, grasshopper preparation
-While ENVI-met internal geometry processing overrides the input 3D model with standard voxels, Outdoor+ requires more detailed solutions to generate good quality OpenFOAM meshes. In this regard, the geometry pre-processing is crucial: the input mesh geometry determines the overall OpenFOAM mesh quality and validity. If the OpenFOAM mesh has bad quality it is more likely that the simulation crashes (often silently). These meshes follow a series of quality indicators when analyzed using the OpenFOAM function checkMesh. The checkMesh function allows to read and expose potentially problematic points, faces, or cells in the OpenFOAM resulting mesh. The OpenFOAM resulting mesh quality is tested for mesh statistics (e.g., number of points, faces, cells), number of cell types according to their face numbers, topology checks, patch topology checks, and geometry checks with quality parameters. The quality parameters check include high aspect ratio cells, non-orthogonality, and max skewness. High aspect ratio cells appear in very fine boundary layers. While it is not fatal for the solver numerical stability, they can increase convergence times. Non-orthogonality check determine if the mesh geometry is usable for simulation, where values greater than 90 degrees flag the resulting mesh geometry as a bad mesh. Finally, higher max skewness values may impair the accuracy of the simulation results, but they are not critical for the solver execution.
+While ENVI-met internal geometry processing overrides the input 3D model with standard voxels, Outdoor+ requires more detailed solutions to generate good quality OpenFOAM meshes. In this regard, the geometry pre-processing is crucial: the input mesh geometry determines the overall OpenFOAM mesh quality and validity. If the OpenFOAM mesh has bad quality, it is more likely that the simulation crashes (often silently). These meshes follow a series of quality indicators when analyzed using the OpenFOAM function checkMesh. The checkMesh function allows reading and expose potentially problematic points, faces, or cells in the OpenFOAM resulting mesh. The OpenFOAM resulting mesh quality is tested for mesh statistics (e.g., number of points, faces, cells), number of cell types according to their face numbers, topology checks, patch topology checks, and geometry checks with quality parameters.
+
+The quality parameters check includes high aspect ratio cells, non-orthogonality, and max skewness. High aspect ratio cells appear in very fine boundary layers. While it is not fatal for the solver numerical stability, they can increase convergence times. Non-orthogonality check determine if the mesh geometry is usable for simulation, where values greater than 90 degrees flag the resulting mesh geometry as a bad mesh. Finally, higher max skewness values may impair the accuracy of the simulation results, but they are not critical for the solver execution. \ref{fig_geometryprocessing} illustrates the geometry processing workflow, including the geometrical entities, the geometry treatment process, file formats, and the final geometry output file format.
 
 \begin{figure}[H]
-    \centering    
-    \caption{Geometry processing workflow. Outdoor+ uses the NETGEN 1D-2D-3D algorithm via SALOME, while ENVI-met uses Rhinoceros geometry directly assigned to each entity.}
+    \centering        
     \includegraphics[width=1\linewidth]{figures/Geometry_Processing.jpg}
+    \caption[Geometry processing workflow.]{Geometry processing workflow. Outdoor+ uses the NETGEN 1D-2D-3D algorithm via SALOME, while ENVI-met uses Rhinoceros geometry directly assigned to each entity.}
     \label{fig_geometryprocessing}
 \end{figure}
 
 \subsection{ENVI-met input geometry preparation}
 
-The ENVI-met workflow requires a \gls{dem} terrain element, defined as a box-shaped geometry starting from the XY plane up to a specific height of 3 [m]. Additionally, building geometries need to be placed on top of the terrain \gls{dem} unless explicitly categorized as floating objects. ENVI-met also allows surface mapping as soil entities by defining a soil material. This surface mapping consists of a planar surface placed above the simulation domain with its face normals pointing downwards. In this comparative study, we use the Morpho Grasshopper plugin \cite{nunzio_antonellodnmorpho_2024} to write the required ENVI-met files for the simulation process.
+The ENVI-met workflow requires a \gls{dem} terrain element, defined as a box-shaped geometry starting from the XY plane up to a specific height of 3 [m]. Additionally, building geometries need to be placed on top of the terrain \gls{dem} unless explicitly categorized as floating objects. ENVI-met also allows surface mapping as soil entities by defining a soil material. This surface mapping consists of a planar surface placed above the simulation domain with its face normals pointing downwards. In this comparative study, we use the Morpho Grasshopper plugin \cite{nunzio_antonellodnmorpho_2024} to write the required ENVI-met files for the simulation process. \ref{fig:envimet_geometry_preparation} shows the general ENVI-met workflow through the Morpho plugin interface. \ref{fig:stadium_envimet_inx} and \ref{fig:edcenter_envimet_inx} illustrate the resulting ENVI-met geometries for the two case studies.
 
 \begin{figure}[H]
     \centering
@@ -36,22 +138,22 @@ The ENVI-met workflow requires a \gls{dem} terrain element, defined as a box-sha
     \label{fig:envimet_morpho_workflow}
 \end{figure}
 
-ENVI-met geometry preparation requires the following elements to work (\ref{fig:envimet_geometry_preparation}):
+ENVI-met geometry preparation requires the following (\ref{fig:envimet_geometry_preparation}):
 
 \begin{itemize}
     \setlength\itemsep{0.1em}
     \setlength\parskip{0pt}
     \setlength\parsep{0pt}
-    \item \gls{dem} terrain geometry placement.
-    \item Positive XY quadrant simulation domain placement.
-    \item Correct building geometry placement: must be above XY plane and on top of \gls{dem}.
-    \item Surface-\gls{dem} mapping: must have a negative Z-coordinate face normal.
+    \item (1) \gls{dem} terrain geometry placement.
+    \item (2) Positive XY quadrant simulation domain placement.
+    \item (3) Correct building geometry placement: must be above XY plane and on top of \gls{dem}.
+    \item (4) Surface-\gls{dem} mapping: must have a negative Z-coordinate face normal.
 \end{itemize}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{figures/envimet_explanation_geometry.jpg}
-    \caption{ENVI-met geometry preparation process: 1. \gls{dem} for terrain, placed above the XY plane; 2. simulation domain located in positive XY quadrant; 3. building geometries placed on top of \gls{dem}; 4. planar surfaces above \gls{dem} to map surface materials.}
+    \caption[ENVI-met geometry preparation process.]{ENVI-met geometry preparation process: 1. \gls{dem} for terrain, placed above the XY plane; 2. simulation domain located in positive XY quadrant; 3. building geometries placed on top of \gls{dem}; 4. planar surfaces above \gls{dem} to map surface materials.}
     \label{fig:envimet_geometry_preparation}
 \end{figure}
 
@@ -71,7 +173,7 @@ ENVI-met geometry preparation requires the following elements to work (\ref{fig:
 
 \subsection{Outdoor+ input geometry preparation}
 
-The Outdoor+ workflow requires a geometry input from Rhinoceros, referencing the elements to the Grasshopper environment. These elements are grouped in two categories: buildings and vegetation (i.e., trees). Buildings are modeled as \gls{brep} and converted to a triangulated mesh using the NETGEN 1D-2D-3D meshing algorithm. A custom SALOME NETGEN 1D-2D-3D meshing algorithm process is created as a script component in Grasshopper to embed the meshing process. The script component uses the SALOME Python interface to execute the \textit{geomBuilder} and \textit{smeshBuilder} methods. The algorithm is the \textit{smeshBuilder.NETGEN-1D2D3D} definition used to generate a tetrahedron mesh. To create a valid tetrahedron mesh, the utilized inputs are defined as follows:
+The Outdoor+ workflow requires a geometry input from Rhinoceros, referencing the elements to the Grasshopper environment. These elements are grouped in two categories: buildings and vegetation (i.e., trees). Buildings are modeled as \gls{brep} and converted to a triangulated mesh using the NETGEN 1D-2D-3D meshing algorithm. A custom SALOME NETGEN 1D-2D-3D meshing algorithm process is created as a script component in Grasshopper to embed the meshing process (\ref{fig:salome_gh}). The script component uses the SALOME Python interface to execute the \textit{geomBuilder} and \textit{smeshBuilder} methods. The algorithm is the \textit{smeshBuilder.NETGEN-1D2D3D} definition used to generate a tetrahedron mesh. To create a valid tetrahedron mesh, the utilized inputs are defined as follows:
 
 \begin{itemize}
     \setlength\itemsep{0.1em}
@@ -91,12 +193,12 @@ The Outdoor+ workflow requires a geometry input from Rhinoceros, referencing the
     \label{fig:salome_gh}
 \end{figure}
 
-On the other hand, the vegetation elements require a different treatment. This treatment consists of creating a new watertight mesh that solves the collision of trees when are placed together. For this purpose, the workflow leverages the \textit{ShrinkWrap} Grasshopper algorithm to fit a new set of meshes as closed meshes. This is an iterative process where resulting meshes are visually inspected to find potential artifacts. As the Outdoor+ plugin uses \gls{stl} mesh files for pre-processing, the resulting ShrinkWrap quad-mesh is not suitable. To generate the final suitable mesh geometry for vegetation elements, we use the TriMesh Grasshopper component. The resulting tri-mesh geometry is connected to the Vegetation Region component to write the case folder and prepare the simulation.
+On the other hand, the vegetation elements require a different treatment. This treatment consists of creating a new watertight mesh that solves the collision of trees when are placed together. For this purpose, the workflow leverages the \textit{ShrinkWrap} Grasshopper algorithm to fit a new set of meshes as closed meshes. This is an iterative process where resulting meshes are visually inspected to find potential artifacts. As the Outdoor+ plugin uses \gls{stl} mesh files for pre-processing, the resulting ShrinkWrap quad-mesh is not suitable. To generate the final suitable mesh geometry for vegetation elements, we use the TriMesh Grasshopper component. The resulting tri-mesh geometry is connected to the Vegetation Region component to write the case folder and prepare the simulation (\ref{fig:trees_shrinkwrap}).
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{figures/trees_shrinkwrap_treatment.jpg}
-    \caption{Vegetation geometry treatment process: 1. base mesh geometry, 2. ShrinkWrap, 3. TriMesh.}
+    \caption[Vegetation geometry treatment process.]{Vegetation geometry treatment process: 1. base mesh geometry, 2. ShrinkWrap, 3. TriMesh.}
     \label{fig:trees_shrinkwrap}
 \end{figure}
 
@@ -131,7 +233,9 @@ The final definition of the input mesh geometry including buildings and trees el
 \end{figure}
 
 \newpage
-The Outdoor+ geometry preparation consists of a series of OpenFOAM meshing functions being executed in sequence. The geometry preparation sequence includes (1) blockMesh, (2) surfaceFeatures, (3) snappyHexMesh, and (4) extrudeMesh. The blockMesh function decomposes the domain geometry into a set of one or more three dimensional hexahedral blocks. Then, the surfaceFeatures function generates the edgeMesh file that contains the features extracted from the respective input \gls{stl} geometry file. Both the blockMesh and the surfaceFeatures functions serve as the starting point for the snappyHexMesh function for the air and vegetation regions. The snappyHexMesh functions is an "automatic split hex mesher" that refines and snaps to surfaces. This utility function generates 3D meshes containing hexahedra and split-hexahedra from a \gls{stl} surface geometry. On the other side, the building geometry preparation uses the extrudeMesh function to generate the "wall thickness" defined by cells. The extrudeMesh creates a 2D mesh by projecting the source patch into the exposed patch. This function reads from the extrudeMeshDict file that contains an entry for number of layers (nLayers) and thickness. For this purpose, the resulting extrusion should grown inwards (interior of the building blocks) using the negative face normal from the input \gls{stl} geometry.
+The Outdoor+ geometry preparation consists of a series of OpenFOAM meshing functions being executed in sequence. The geometry preparation sequence includes (1) blockMesh, (2) surfaceFeatures, (3) snappyHexMesh, and (4) extrudeMesh. The blockMesh function decomposes the domain geometry into a set of one or more three-dimensional hexahedral blocks. Then, the surfaceFeatures function generates the edgeMesh file that contains the features extracted from the respective input \gls{stl} geometry file. Both the blockMesh and the surfaceFeatures functions serve as the starting point for the snappyHexMesh function for the air and vegetation regions. The snappyHexMesh functions is an "automatic split hex mesher" that refines and snaps to surfaces. This utility function generates 3D meshes containing hexahedra and split-hexahedra from a \gls{stl} surface geometry.
+
+On the other side, the building geometry preparation uses the extrudeMesh function to generate the "wall thickness" defined by cells. The extrudeMesh creates a 2D mesh by projecting the source patch into the exposed patch. This function reads from the extrudeMeshDict file that contains an entry for number of layers (nLayers) and thickness. For this purpose, the resulting extrusion should have grown inwards (interior of the building blocks) using the negative face normal from the input \gls{stl} geometry.
 
 \begin{figure}[H]
     \centering
@@ -144,10 +248,152 @@ The Outdoor+ geometry preparation consists of a series of OpenFOAM meshing funct
     \centering
     \includegraphics[width=0.9\linewidth]{figures/edcenter_paraview_openfoam_composition.jpg}
     \caption{Educational Center typology resulting OpenFOAM geometry.}
-    \label{fig:stadium_geometry_openfoam}
+    \label{fig:edcenter_geometry_openfoam}
 \end{figure}
 
 \section{Simulation setup}
+
+To conduct this comparative study between Outdoor+ and ENVI-met, the simulation setup needs to be matched accordingly. This comparative study focuses on matching the vegetation models, buildings materials, and atmospheric conditions. The tables below present the parameter matching for vegetation model and building material model with three columns: a first column for the ENVI-met key parameter, a second column with the Outdoor+ key parameter, and a third column with the value for both models. \ref{tab:stadium_veg_match} illustrates the stadium case study vegetation model matching, using the following key and values: height of tree (Height, H; 15), leaf length (LeafLength, l; 0.08), minimum stomatal resistance (rs\_min, rsMin; 150), leaf type (LeafType, nEvapSides; 1), and \gls{lad} values (LAD-profile, LAD; 1.1). Similarly, \ref{tab:stadium_building_match} shows the key and value pairs for the building material modeling, with the following parameters: material density (Density, rho; 2220), specific heat (Specific heat, cap; 850), and thermal conductivity (Thermal conductivity, lambda1; 1.6).
+
+\vspace{0.75cm}
+
+%ADD ALL AVAILABLE INPUTS AND KEEP THEM EMPTY IF NOT MATCHED
+%Stadium vegetation model match table
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{0.8}
+    \setlength{\tabcolsep}{10pt}
+    \caption[Stadium vegetation model matching.]{ENVI-met and Outdoor+ vegetation modeling parameter match for Stadium typology case study. All Outdoor+ keys included, with a '-' representing ENVI-met non-matching parameter available.}
+    \begin{tabular}{llrr}
+        \toprule
+        \textbf{ENVI-met Key} & \textbf{Outdoor+ Key} & \textbf{Value}  & Unit\\ 
+        \midrule
+        - & a1 & 169 & -\\
+        - & a2 & 18  & -\\
+        - & a3 & 0.005  & -\\
+        - & D0 & 1.2 & -\\
+        - & C & 131.035 & -\\
+        - & betaP & 1 & -\\
+        - & betaD & 5.1 & -\\
+        Height & H & 15 & $m$\\
+        - & kc & 0.5 & -\\        
+        LeafLength & l & 0.08 & $m$\\
+        rs\_min & rsMin & 150 & $s*m^-1$\\
+        - & Rg0 & 800  & -\\
+        - & Rl0 & 350 & -\\
+        LeafType & nEvapSides & 1 & -\\
+        cellsize & minCellSizeFactor & 1-10 & -\\
+        LAD-Profile & LAD & 1.1 & $m^2/m^3$\\
+        \bottomrule
+    \end{tabular}
+    \label{tab:stadium_veg_match}
+\end{table}
+
+%Stadium buildings model match table (W/(m·K))
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{0.8}
+    \setlength{\tabcolsep}{10pt}
+    \caption[Stadium building material model matching.]{ENVI-met and Outdoor+ building material modeling parameter match for Stadium typology case study. All Outdoor+ keys included, with a '-' representing ENVI-met non-matching parameter available.}
+    \begin{tabular}{llrr}
+        \toprule
+        \textbf{ENVI-met Key} & \textbf{Outdoor+ Key} & \textbf{Value} & Unit\\ 
+        \midrule
+        Density & rho & 2220 & $kg/m^3$\\
+        Specific heat & cap & 850 & $J/(kg*K)$\\
+        Thermal conductivity & lambda1 & 1.6 & $W/(m*K)$\\
+        - & lambda2 & 0 & -\\
+        \bottomrule
+    \end{tabular}
+    \label{tab:stadium_building_match}
+\end{table}
+
+\clearpage
+The educational center case study uses the same structure, with the main difference being that the ENVI-met model has two types of tree sizes (i.e., 15 meters height and 25 meters height). The Outdoor+ model uses the tree geometries height values, while also including a height (H) parameter. Due to the current capabilities of the Outdoor+ 0.0.19-beta version, only the height value H of 15 is used. \ref{tab:edcenter_veg_match_medium} and \ref{tab:edcenter_veg_match_large} show the vegetation model matching, and \ref{tab:edcenter_building_match} illustrates the building material model match.
+
+\vspace{0.75cm}
+
+%Educational center vegetation model match table
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{0.8}
+    \setlength{\tabcolsep}{10pt}
+    \caption[Educational center large vegetation model matching.]{ENVI-met and Outdoor+ vegetation modeling parameter match for Educational center typology case study (large tree). All Outdoor+ keys included, with a '-' representing ENVI-met non-matching parameter available.}
+    \begin{tabular}{llrr}
+        \toprule
+        \textbf{ENVI-met Key} & \textbf{Outdoor+ Key} & \textbf{Value} & Unit\\ 
+        \midrule
+        - & a1 & 169 & -\\
+        - & a2 & 18 & -\\
+        - & a3 & 0.005 & -\\
+        - & D0 & 1.2 & -\\
+        - & C & 131.035 & -\\
+        - & betaP & 1 & -\\
+        - & betaD & 5.1 & -\\
+        Height & H & 25 & $m$\\
+        - & kc & 0.5 & -\\ 
+        LeafLength & l & 0.08 & $m$\\
+        rs\_min & rsMin & 150 & $s*m^{-1}$\\
+        - & Rg0 & 800 & -\\
+        - & Rl0 & 350 & -\\
+        LeafType & nEvapSides & 1 & -\\
+        cellsize & minCellSizeFactor & 1-10 & -\\
+        LAD-Profile & LAD & 0.30 & $m^2/m^3$\\
+        \bottomrule
+    \end{tabular}
+    \label{tab:edcenter_veg_match_large}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{0.8}
+    \setlength{\tabcolsep}{10pt}
+    \caption[Educational center medium vegetation model matching.]{ENVI-met and Outdoor+ vegetation modeling parameter match for Educational center typology case study (medium tree). All Outdoor+ keys included, with a '-' representing ENVI-met non-matching parameter available.}
+    \begin{tabular}{llrr}
+        \toprule
+        \textbf{ENVI-met Key} & \textbf{Outdoor+ Key} & \textbf{Value} & Unit \\ 
+        \midrule
+        - & a1 & 169 & -\\
+        - & a2 & 18 & -\\
+        - & a3 & 0.005 & -\\
+        - & D0 & 1.2 & -\\
+        - & C & 131.035 & -\\
+        - & betaP & 1 & -\\
+        - & betaD & 5.1 & -\\
+        Height & H & 15 & $m$\\
+        - & kc & 0.5 & -\\ 
+        LeafLength & l & 0.08 & $m$\\
+        rs\_min & rsMin & 150 & $s*m^{-1}$\\
+        - & Rg0 & 800 & -\\
+        - & Rl0 & 350 & -\\
+        LeafType & nEvapSides & 1 & -\\
+        cellsize & minCellSizeFactor & 1-10 & -\\
+        LAD-Profile & LAD & 0.30 & $m^2/m^3$\\
+        \bottomrule
+    \end{tabular}
+    \label{tab:edcenter_veg_match_medium}
+\end{table}
+
+
+%Educational center buildings model match table
+\begin{table}[H]
+    \centering
+    \renewcommand{\arraystretch}{0.8}
+    \setlength{\tabcolsep}{10pt}
+    \caption[Educational center building material matching.]{ENVI-met and Outdoor+ building material modeling parameter match for Stadium typology case study. All Outdoor+ keys included, with a '-' representing ENVI-met non-matching parameter available.}
+    \begin{tabular}{llrr}
+        \toprule
+        \textbf{ENVI-met Key} & \textbf{Outdoor+ Key} & \textbf{Value} & Unit\\ 
+        \midrule
+        Density & rho & 2220 & $kg/m^3$\\
+        Specific heat & cap & 850 & $J/(kg*K)$\\
+        Thermal conductivity & lambda1 & 1.6 & $W/(m*K)$\\
+        - & lambda2 & 0 & -\\
+        \bottomrule
+    \end{tabular}
+    \label{tab:edcenter_building_match}
+\end{table}
+
 %universal settings
 %outdoorplus
 %envimet-morpho
@@ -173,15 +419,17 @@ The Outdoor+ geometry preparation consists of a series of OpenFOAM meshing funct
 
 %educational center buildings: [000000] Default Wall - moderate insulation
 
+
+\clearpage
 \subsection{ENVI-met simulation setup}
 
-ENVI-met consists of several modules (i.e., SPACES, ENVI-guide, ENVI-core, BIO-met, LEONARDO, DBManager, and Albero), performing specific functions from geometry definition to advanced results visualization and database storage. The database storage is managed by DBManager, which is the materials and objects library software module. This software contains the information of wall and roof materials, which ENVI-met uses for the building geometry definition. In ENVI-met 5, the vegetation library is handled separately by the Albero module. Albero allows the user to read and write/modify the 3D plant database, including the general information, the physical properties, and the plant geometry. However, some of the vegetation properties are not exposed in the Albero interface, such as the minimum stomatal resistance ($rs_{\text{min}}$), and the Leaf Area Density profile (LAD-Profile). All numerical values are stored in ENVImet5/sys.basedata/database.edb. The ENVI-met database file contains the type (e.g., PLANT3D), the ID (e.g., 02CMDM), the description (e.g., Cylindric, medium trunk, dense, medium (15m)), and the description. The main description store the values for parameters such as Albedo, Transmittance, $rs_{\text{min}}$, and the LAD-Profile definition formatted as a 3D sparse matrix. Each cell in the matrix contains the coordinate values and each \gls{lad} value. Since ENVI-met is used as the "observed" values, this study uses ENVI-met database definitions as inputs to setup Outdoor+.
+ENVI-met consists of several modules (i.e., SPACES, ENVI-guide, ENVI-core, BIO-met, LEONARDO, DBManager, and Albero), performing specific functions from geometry definition to advanced results visualization and database storage. The database storage is managed by DBManager, which is the materials and objects library software module. This software contains the information of wall and roof materials, which ENVI-met uses for the building geometry definition. In ENVI-met 5, the vegetation library is handled separately by the Albero module. Albero allows the user to read and write/modify the 3D plant database, including the general information, the physical properties, and the plant geometry. However, some vegetation properties are not exposed in the Albero interface, such as the minimum stomatal resistance ($rs_{\text{min}}$), and the Leaf Area Density profile (LAD-Profile). All numerical values are stored in ENVImet5/sys.basedata/database.edb. The ENVI-met database file contains the type (e.g., PLANT3D), the ID (e.g., 02CMDM) and the description (e.g., Cylindric, medium trunk, dense, medium (15m)). The main description store the values for parameters such as Albedo, Transmittance, $rs_{\text{min}}$, and the LAD-Profile definition formatted as a 3D sparse matrix. Each cell in the matrix contains the coordinate values and each \gls{lad} value. Since ENVI-met is used as the "observed" values, this study uses ENVI-met database definitions as inputs to set up Outdoor+.
 
 \subsection{Outdoor+ simulation setup}
 
 %https://www.sciencedirect.com/science/article/pii/S0360132325007838
 
-Outdoor+ generates an OpenFOAM case directory that consists of folders (i.e., 0, constant, system), sub folders (e.g., air, buildings, triSurface, vegetation), and text files (e.g., controlDict, fvSchemes, fvSolution). Text files are a list of key-value pairs that define each simulation setting before simulation. To properly setup the simulation, the user must define the parameters for the vegetation model and the building material properties. The vegetation model definition is defined by the vegetationProperties file (stored in constant/air), while the building material properties definition is defined by the transportProperties file (stored in constant/buildings). Outdoor+ exposes the parameter definition for both vegetation and buildings regions, which uses the ENVI-met database values described earlier. The vegetationProperties file is used by the urbanMicroclimateFoam simplifiedVegetation algorithm (urbanMicroclimateFoam/LIB/vegetationModels/simplifiedVegetation). The computed model fields are described in the list below. The highest priority field parameters are \gls{lad}: it directly controls all vegetation effects; Cd: controls momentum absorption and wind flow modification; rsMin: controls maximum transpiration rate; and nEvapSides: simple multiplier for transpiration. Medium priority parameters are C: aerodynamic resistance scaling factor; l: characteristic leaf dimension for aerodynamic resistance; and kc: radiation extinction coefficient. Finally, the lower priority parameters are a1, a2, a3, and D0: stomatal response fine-tuning; H: vegetation height; and Rg0, Rl0: reference radiation values.
+Outdoor+ generates an OpenFOAM case directory that consists of folders (i.e., 0, constant, system), sub folders (e.g., air, buildings, triSurface, vegetation), and text files (e.g., controlDict, fvSchemes, fvSolution). Text files are a list of key-value pairs that define each simulation setting before simulation. To set up the simulation, the user must define parameters for the vegetation model and building material properties. The vegetation model is defined by the vegetationProperties file (stored in constant/air), while the building material properties are defined by the transportProperties file (stored in constant/buildings). Outdoor+ exposes the parameter definition for both vegetation and buildings regions. The vegetationProperties file is used by the urbanMicroclimateFoam \textit{simplifiedVegetation} algorithm. The computed model fields are described in the list below, where the highest priority field parameters are \gls{lad}: it directly controls all vegetation effects; Cd: controls momentum absorption and wind flow modification; rsMin: controls maximum transpiration rate; and nEvapSides: simple multiplier for transpiration. Medium priority parameters are C: aerodynamic resistance scaling factor; l: characteristic leaf dimension for aerodynamic resistance; and kc: radiation extinction coefficient. Finally, the lower priority parameters are a1, a2, a3, and D0: stomatal response fine-tuning; H: vegetation height; and Rg0, Rl0: reference radiation values.
 
 \begin{itemize}
     \setlength\itemsep{0.1em}
@@ -194,7 +442,7 @@ Outdoor+ generates an OpenFOAM case directory that consists of folders (i.e., 0,
     \item Tl: leaf temperature
     \item qsat: saturated specific humidity
     \item Qlat: latent heat flux
-    \item Qsen: sensible heat flux
+    \item Qsen: sensible heat flux 
     \item ra: aerodynamic resistance
     \item rs: stomatal resistance
     \item Rg: global radiation
@@ -205,7 +453,7 @@ Outdoor+ generates an OpenFOAM case directory that consists of folders (i.e., 0,
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{figures/Simplified_Vegetation_Flowchart.jpg}
+\includegraphics[scale=0.1125, angle=90]{figures/Simplified_Vegetation_Flowchart.jpg}
     \caption{simplifiedVegetation calculation flowchart.}
     \label{simplifiedVegetation}
 \end{figure}
@@ -240,12 +488,14 @@ Outdoor+ generates an OpenFOAM case directory that consists of folders (i.e., 0,
     \label{tab:vegetationProperties}
 \end{table}
 
-This comparative study categorizes the Outdoor+ inputs in four groups: (1) Air Region, (2) Vegetation Region, (3) Buildings Region, and (4) Global parameters. The air region group consists of the description of the \gls{abl} which is informed by wind speed at the given height, height at which wind speed is given, the wind direction as a vector, and the surface roughness length value. The vegetation region group is defined by a \gls{lad} value and a total of 15 parameters available in the Vegetation Properties component. According to the parameter priority previously described, the vegetation region model uses custom values for H (location of canopy height), l (characteristic length of leaf), rsMin (minimum stomatal resistance), and nEvapSides. The Vegetation Mesh Settings component is connected to the Vegetation Region component (as required) but preserves the default values. The buildings region group consists of a Building Material component and a Building Mesh Settings component. The Building Material component determines the base material available in the urbanMicroclimateFoam solver, and the values for the following parameters: material density (rho), specific heat (cap), lambda1 (base thermal conductivity in dry conditions), and lambda2. The specified values for the case studies are the default values used in the ENVI-met simulations. Lastly, the global parameters include all the remaining components that define the simulation domain box dimensions, the timing parameters and simulation settings. The Box Domain Dimensions component writes the simulation domain box by placing the boundary faces away from the geometry by a determined value. The Timing Parameters component requires a \gls{epw} file that informs the initial boundary conditions, a start day (as a day-of-year integer value), start time, and duration in hours. The Simulation Settings component mainly writes the settings that control the simulation process (e.g., number of CPUs, maxFluidIteration).\ref{buildmaterial_vegetationproperties} illustrates the buildings region and vegetation region properties setup, and \ref{fig:buildings_and_veg_definition} shows both complete region definitions. \ref{tab:outdoorplus_stadium_inputs} and \ref{tab:outdoorplus_educationalcenter_inputs} describe the Outdoor+ inputs used for simulation.
+This comparative study categorizes the Outdoor+ inputs in four groups: (1) Air Region, (2) Vegetation Region, (3) Buildings Region, and (4) Global parameters. The air region group consists of the description of the \gls{abl} which is informed by wind speed at the given height, the height at which wind speed is given, the wind direction as a vector, and the surface roughness length value. The vegetation region group is defined by a \gls{lad} value and a total of 15 parameters available in the Vegetation Properties component. According to the parameter priority previously described, the vegetation region model uses custom values for H (location of canopy height), l (characteristic length of leaf), rsMin (minimum stomatal resistance), and nEvapSides. The Vegetation Mesh Settings component is connected to the Vegetation Region component (as required) but preserves the default values. The buildings region group consists of a Building Material component and a Building Mesh Settings component. The Building Material component determines the base material available in the urbanMicroclimateFoam solver, and the values for the following parameters: material density (rho), specific heat (cap), lambda1 (base thermal conductivity in dry conditions), and lambda2. The specified values for the case studies are the default values used in the ENVI-met simulations. Lastly, the global parameters include all the remaining components that define the simulation domain box dimensions, the timing parameters and simulation settings.
+
+The Box Domain Dimensions component writes the simulation domain box by placing the boundary faces away from the geometry by a determined value. The Timing Parameters component requires a \gls{epw} file that informs the initial boundary conditions, a start day (as a day-of-year integer value), start time, and duration in hours. The Simulation Settings component mainly writes the settings that control the simulation process (e.g., number of CPUs, maxFluidIteration).\ref{buildmaterial_vegetationproperties} illustrates the buildings region and vegetation region properties setup, and \ref{fig:buildings_and_veg_definition} shows both complete region definitions. \ref{tab:outdoorplus_stadium_inputs} and \ref{tab:outdoorplus_educationalcenter_inputs} describe the Outdoor+ inputs used for simulation.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.75\linewidth]{figures/vegProperties_buildProperties.jpg}
-    \caption{Outdoor+ Building Material and Vegetation Properties components. The components determine the contents of the transportProperties file and the vegetationProperties file respectively.}
+    \caption[Outdoor+ Building Material and Vegetation Properties components.]{Outdoor+ Building Material and Vegetation Properties components. The components determine the contents of the transportProperties file and the vegetationProperties file respectively.}
     \label{buildmaterial_vegetationproperties}
 \end{figure}
 
@@ -372,7 +622,7 @@ This comparative study categorizes the Outdoor+ inputs in four groups: (1) Air R
 
 \subsection{Running ENVI-met simulation}
 
-On the other hand, the ENVI-met simulation settings are defined in the .SIMX file. This file contains the definition of the climate settings used to perform the simulation. In this comparative study, ENVI-met uses the "Full Forcing" method with the same \gls{epw} file for each case study respectively. The full forcing settings allow the user to enable of disable specific forcing fields: wind, air temperature, radiation/clouds, relative humidity, and precipitation. In this study, ENVI-met simulations use disabled forcing for wind and radiation/clouds. The wind field is set to a wind speed value of 2 $m/s$ and the wind direction matches the one used in the Outdoor+ definition. Radiation and cloud cover is set as 0 for low, medium, and high clouds.
+On the other hand, the ENVI-met simulation settings are defined in the .SIMX file. This file contains the definition of the climate settings used to perform the simulation. In this comparative study, ENVI-met uses the "Full Forcing" method with the same \gls{epw} file for each case study, respectively. The full forcing settings allow the user to enable or disable specific forcing fields: wind, air temperature, radiation/clouds, relative humidity, and precipitation. In this study, ENVI-met simulations use disabled forcing for wind and radiation/clouds. The wind field is set to a wind speed value of 2 $m/s$ and the wind direction matches the one used in the Outdoor+ definition. Radiation and cloud cover is set as 0 for low, medium, and high clouds.
 
 \subsection{Running Outdoor+ simulation}
 
@@ -399,108 +649,9 @@ The second function is the calcLAI utility. This utility simulates the radiative
 
 %we also do the following: prepare in parallel (10 procs) using BlueCFD, and run in single using WSL
 
-Prior to executing the urbanMicroclimateFoam function, the simulation process requires to execute the \gls{solarraytracinggen} function. This function identifies which boundary faces are directly illuminated by the sun for each sun position at timesteps. It aggregates visibility data into view factor coarse faces used by the solar radiation model to compute heat flux due to direct sun and diffuse sky.
-
-\section{Matching simulation inputs}
-
-probably this goes before the full simulation settings table
+Prior to executing the urbanMicroclimateFoam function, the simulation process requires executing the \gls{solarraytracinggen} function. This function identifies which boundary faces are directly illuminated by the sun for each sun position at time steps. It aggregates visibility data into view factor coarse faces used by the solar radiation model to compute heat flux due to direct sun and diffuse sky.
 
 
-%ADD ALL AVAILABLE INPUTS AND KEEP THEM EMPTY IF NOT MATCHED
-%Stadium vegetation model match table
-\begin{table}[h!]
-    \centering
-    \renewcommand{\arraystretch}{1.3}
-    \setlength{\tabcolsep}{10pt}
-    \caption{ENVI-met and Outdoor+ vegetation modeling parameter match for Stadium typology case study.}
-    \begin{tabular}{llr}
-        \toprule
-        \textbf{ENVI-met Key} & \textbf{Outdoor+ Key} & \textbf{Value} \\ 
-        \midrule
-        Height & H & 15 \\
-        LeafLength & l & 0.08 \\
-        rs\_min & rsMin & 150 \\
-        LeafType & nEvapSides & 1 \\
-        LAD-Profile & LAD & 1.1 \\
-        \bottomrule
-    \end{tabular}
-    \label{tab:stadium_veg_match}
-\end{table}
-
-%Stadium buildings model match table
-\begin{table}[h!]
-    \centering
-    \renewcommand{\arraystretch}{1.3}
-    \setlength{\tabcolsep}{10pt}
-    \caption{ENVI-met and Outdoor+ building material modeling parameter match for Stadium typology case study.}
-    \begin{tabular}{llr}
-        \toprule
-        \textbf{ENVI-met Key} & \textbf{Outdoor+ Key} & \textbf{Value} \\ 
-        \midrule
-        Density & rho & 2220 \\
-        Specific heat & cap & 850 \\
-        Thermal conductivity & lambda1 & 1.6 \\
-        \bottomrule
-    \end{tabular}
-    \label{tab:stadium_building_match}
-\end{table}
-
-%Educational center vegetation model match table
-\begin{table}[h!]
-    \centering
-    \renewcommand{\arraystretch}{1.3}
-    \setlength{\tabcolsep}{10pt}
-    \caption{ENVI-met and Outdoor+ vegetation modeling parameter match for Educational center typology case study (large tree).}
-    \begin{tabular}{llr}
-        \toprule
-        \textbf{ENVI-met Key} & \textbf{Outdoor+ Key} & \textbf{Value} \\ 
-        \midrule
-        Height & H & 25 \\
-        LeafLength & l & 0.08 \\
-        rs\_min & rsMin & 150 \\
-        LeafType & nEvapSides & 1 \\
-        LAD-Profile & LAD & 0.30 \\
-        \bottomrule
-    \end{tabular}
-    \label{tab:edcenter_veg_match_large}
-\end{table}
-
-\begin{table}[h!]
-    \centering
-    \renewcommand{\arraystretch}{1.3}
-    \setlength{\tabcolsep}{10pt}
-    \caption{ENVI-met and Outdoor+ vegetation modeling parameter match for Educational center typology case study (medium tree).}
-    \begin{tabular}{llr}
-        \toprule
-        \textbf{ENVI-met Key} & \textbf{Outdoor+ Key} & \textbf{Value} \\ 
-        \midrule
-        Height & H & 15 \\
-        LeafLength & l & 0.08 \\
-        rs\_min & rsMin & 150 \\
-        LeafType & nEvapSides & 1 \\
-        LAD-Profile & LAD & 0.30 \\
-        \bottomrule
-    \end{tabular}
-    \label{tab:edcenter_veg_match_medium}
-\end{table}
-
-%Educational center buildings model match table
-\begin{table}[h!]
-    \centering
-    \renewcommand{\arraystretch}{1.3}
-    \setlength{\tabcolsep}{10pt}
-    \caption{ENVI-met and Outdoor+ building material modeling parameter match for Stadium typology case study.}
-    \begin{tabular}{llr}
-        \toprule
-        \textbf{ENVI-met Key} & \textbf{Outdoor+ Key} & \textbf{Value} \\ 
-        \midrule
-        Density & rho & 2220 \\
-        Specific heat & cap & 850 \\
-        Thermal conductivity & lambda1 & 1.6 \\
-        \bottomrule
-    \end{tabular}
-    \label{tab:edcenter_building_match}
-\end{table}
 
 \section{Probing and dataset preparation}
 %outdoorplus probing
@@ -508,25 +659,27 @@ probably this goes before the full simulation settings table
 %dataset structure
 %plots
 
-The simulation results consists of a dataset for fields values evaluated at specific locations. Those specific locations are user-defined and must be within the simulation domain and contained within the specified region (i.e., air region, buildings region, or vegetation region). This study analyzes the simulation results for air temperature, specific humidity, and wind speed, therefore, the probing process uses the air region to evaluate. When the simulation is finished, the "Case" output contains the complete OpenFOAM case including the simulation results for all evaluated timesteps. The Probing component receives the case, and requires the definition of three main inputs: Region (i.e., air, buildings, vegetation), Fields (for air region valid fields used in this comparative study are Temperature (T), Specific humidity (w), and Wind vector (U)), and Probing Points is the list of three-coordinate points in the format (x, y, z). The output Probed Case informs the Get Probes component, defining the Probing Name input (the probing name used in the previous step), and the specified field (to read T, w, and U three separate Get Probes components are required). The Probe Values output contains the numerical data obtained from the simulation process. This numerical data is stored as a Grasshopper tree structure, in which each branch refers to a simulation timestep and each simulation timestep contains a list of values according to the list of points.
+The simulation results consists of a dataset for fields values evaluated at specific locations. Those specific locations are user-defined and must be within the simulation domain and contained within the specified region (i.e., air region, buildings region, or vegetation region). This study analyzes the simulation results for air temperature, specific humidity, and wind speed, therefore, the probing process uses the air region to evaluate. When the simulation is finished, the "Case" output contains the complete OpenFOAM case, including the simulation results for all evaluated time steps.
+
+The Probing component receives the case, and requires the definition of three main inputs: Region (i.e., air, buildings, vegetation), Fields (for air region valid fields used in this comparative study are Temperature (T), Specific humidity (w), and Wind vector (U)), and Probing Points is the list of three-coordinate points in the format (x, y, z). The output Probed Case informs the Get Probes component, defining the Probing Name input (the probing name used in the previous step), and the specified field (to read T, w, and U three separate Get Probes components are required). The Probe Values output contains the numerical data obtained from the simulation process. This numerical data is stored as a Grasshopper tree structure, in which each branch refers to a simulation time step and each simulation time step contains a list of values according to the list of points.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{figures/probing.jpg}
-    \caption{Outdoor+ Probing definition. From left to right: Outdoor+ case output, Probing function, and Probes reading.}
+    \caption[Outdoor+ Probing definition.]{Outdoor+ Probing definition. From left to right: Outdoor+ case output, Probing function, and Probes reading.}
     \label{probing_outdoorpluscomponents}
 \end{figure}
 
-On the other hand, ENVI-met simulation results are generated according to the model grid definition. The grid is made by voxels that store the numerical values in their cell centroids. The resulting simulation dataset is stored in a .EDT file starting from the First Flow Field to the last hourly timestep. The air temperature, humidity, and wind speed studied values correspond to the atmosphere subdirectory. The Morpho Read Grid component reads from the selected atmosphere .EDT files, controlled by a list item index for selecting the variable (e.g., 8 is for Potential Air Temperature [ºC]) and a direction index (i.e., 0 = X, 1 = Y, 2 = Z). The two main inputs are "face" and "values". The face output contains the Morpho mesh definition according to the ENVI-met model's grid, while the values output stores a single list of numerical values for the selected variable. The number of faces is equal to the number of values in the list, both lists sorted synchronously. Both resulting datasets are stored converting units for consistency. Outdoor+ simulates temperature in Kelvin [K], while ENVI-met uses Celsius degrees [ºC]. Also, Outdoor+ generates specific humidity values in [kg/kg], requiring to convert ENVI-met specific humidity values from [g/kg] to [kg/kg]. Finally, Outdoor+ outputs a wind vector which magnitude is measured using Grasshopper's Vector Length component. ENVI-met does not require additional conversion for its Wind Speed [\SI{}{\meter\per\second}].
+On the other hand, ENVI-met simulation results are generated according to the model grid definition. The grid is made by voxels that store the numerical values in their cell centroids. The resulting simulation dataset is stored in a .EDT file starting from the First Flow Field to the last hourly time step. The air temperature, humidity, and wind speed studied values correspond to the atmosphere subdirectory. The Morpho Read Grid component reads from the selected atmosphere .EDT files, controlled by a list item index for selecting the variable (e.g., 8 is for Potential Air Temperature [ºC]) and a direction index (i.e., 0 = X, 1 = Y, 2 = Z). The two main inputs are "face" and "values". The face output contains the Morpho mesh definition according to the ENVI-met model's grid, while the values output stores a single list of numerical values for the selected variable. The number of faces is equal to the number of values in the list, both lists sorted synchronously. Outdoor+ simulates temperature in Kelvin [K], while ENVI-met uses Celsius degrees [ºC]. Also, Outdoor+ generates specific humidity values in [kg/kg], requiring to convert ENVI-met specific humidity values from [g/kg] to [kg/kg]. Finally, Outdoor+ outputs a wind vector which magnitude is measured using Grasshopper's Vector Length component. ENVI-met does not require additional conversion for its Wind Speed [\SI{}{\meter\per\second}].
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{figures/morpho_readgrisd.jpg}
-    \caption{ENVI-met Morpho Read Grid component. It reads the numerical values contained in the .EDT file per selected variable.}
+    \caption[ENVI-met Morpho Read Grid component.]{ENVI-met Morpho Read Grid component. It reads the numerical values contained in the .EDT file per selected variable.}
     \label{morpho_readgrid}
 \end{figure}
 
-One of the advantages of Outdoor+ is the probing point location freedom inside the simulation domain. ENVI-met allows to specifically place probing points as receptors, allowing to monitor atmosphere and soil processes in detail. However, running 12 simulation hours is already computationally expensive for ENVI-met. Since this comparative study aims to compare the entire simulation domain, it relies on the cell-contained ENVI-met data point to serve as an Outdoor+ probing point. Using an existing ENVI-met data point for Outdoor+ provides consistency and ensures equal probing location. To probe using ENVI-met cell data points, the Morpho plugin reads ENVI-met simulation results and loads them into Grasshopper, including the mesh face and value pair for all timesteps. The probing point extraction is performed as follows:
+One of the advantages of Outdoor+ is the probing point location freedom inside the simulation domain. ENVI-met allows to specifically place probing points as receptors, allowing to monitor atmosphere and soil processes in detail. However, running 12 simulation hours is already computationally expensive for ENVI-met. Since this comparative study aims to compare the entire simulation domain, it relies on the cell-contained ENVI-met data point to serve as an Outdoor+ probing point. Using an existing ENVI-met data point for Outdoor+ provides consistency and ensures equal probing location. To probe using ENVI-met cell data points, the Morpho plugin reads ENVI-met simulation results and loads them into Grasshopper, including the mesh face and value pair for all time steps. The probing point extraction is performed as follows:
 
 \begin{enumerate}
     \setlength\itemsep{0.1em}
@@ -538,7 +691,7 @@ One of the advantages of Outdoor+ is the probing point location freedom inside t
     \item Retrieve mesh face centroids as probing points. This is the final set of Outdoor+ probing points matching the location of the original ENVI-met data points.
 \end{enumerate}
 
-Probing points are sorted using the Sort Points Grasshopper component to ensure point matching. This method sorts the points by Euclidean coordinates (i.e., X, Y, and Z, in that order). The Sort Points component outputs the sorted list of points and the sorted indices. The list of sorted indices is used to sort the numerical values synchronously. Once the data is sorted and aligned, we write the dataset matrix in .xlsx format using the TTToolbox \textit{Write To Excel Classic} component. The shape of the resulting dataset consists of 12 columns representing timesteps. The timesteps start from 0 being the initial condition, while the rows store each data point scalar values for air temperature and specific humidity, or vector value for wind speed. These raw datasets are transferred into a merged file to facilitate the data conversion and management for further statistical analysis and plot generation.
+Probing points are sorted using the Sort Points Grasshopper component to ensure point matching. This method sorts the points by Euclidean coordinates (i.e., X, Y, and Z, in that order). The Sort Points component outputs the sorted list of points and the sorted indices. The list of sorted indices is used to sort the numerical values synchronously. Once the data is sorted and aligned, we write the dataset matrix in .xlsx format using the TTToolbox \textit{Write To Excel Classic} component. The shape of the resulting dataset consists of 12 columns representing time steps. The time steps start from 0 being the initial condition, while the rows store each data point scalar values for air temperature and specific humidity, or vector value for wind speed. These raw datasets are transferred into a merged file to facilitate the data conversion and management for further statistical analysis and plot generation.
 
 \section{Statistical analysis}
 
@@ -550,7 +703,7 @@ Statistical metrics allow testing for validation of different resulting datasets
 
 It is important to note that microclimate modeling tools are capable of predicting results based on existing physics theory, where assumptions and simplifications are made to reduce computational complexity \cite{adelia_tool_2020}. Among the variable statistical validation metrics, the most significant ones are the coefficient of determination ($R^2$), \gls{rmse}, \gls{mae}, and the Willmott's Index of Agreement (d). The Willmott's Index of Agreement is superior to correlation metrics because it detects systematic bias between predicted and observed values, while correlation coefficients can show perfect agreement even when models consistently over or underestimate by several degrees.
 
-In the context of this comparative study, the coefficient of determination ($R^2$) measures correlation strength between simulated (predicted) and observed values, with values closer to 1 indicating higher reliability \cite{rodriguez_alvarez_35th_2021}. \gls{rmse} and \gls{mae} quantify the magnitude of prediction errors, with values closer to 0 representing greater accuracy. The Index of Agreement (d), which ranges from 0 to 1, evaluates how well the model captures observed trends beyond simple correlation. Additionally, visual comparison methods can reveal patterns in data distribution. Q-Q plots are generated by ranking simulated and measured concentrations and pairing them by rank to reveal distributional similarities. A simpler approach using scatter plot diagrams provide another means of inter-comparing datasets \cite{paas_comparison_2016}.
+In the context of this comparative study, the coefficient of determination ($R^2$) measures correlation strength between simulated (predicted) and observed values, with values closer to 1 indicating higher reliability \cite{rodriguez_alvarez_35th_2021}. \gls{rmse} and \gls{mae} quantify the magnitude of prediction errors, with values closer to 0 representing greater accuracy. The Index of Agreement (d), which ranges from 0 to 1, evaluates how well the model captures observed trends beyond simple correlation. Additionally, visual comparison methods can reveal patterns in data distribution. A simpler approach using scatter plot diagrams provide another means of inter-comparing datasets \cite{paas_comparison_2016}.
 
 Comparative studies in literature rely on statistical metrics measuring the error and alignment of two or more datasets. To analyze the resulting datasets for temperature, humidity, and wind speed, this study uses the mentioned \gls{rmse}, ($R^2$), Willmott's Index of Agreement (d), and \gls{mae}. The goal is to identify the overall agreement and alignment of the Outdoor+ simulation results against ENVI-met. The following section details the Python script implementation to read the dataset files, execute the analysis and generate the plots.
 
@@ -585,32 +738,36 @@ denominator = np.sum((np.abs(predicted - o_mean)
 return 1 - (numerator / denominator)
 \end{lstlisting}
 
-This method computes the mentioned statistical performance metrics using all available data points in both Outdoor+ and ENVI-met resulting datasets, writing the results table as a .xlsx file for practicality. The length of both datasets is equal and corresponds to the total number of probing points obtained from the ENVI-met grid domain. Using the ENVI-met grid domain stores the values in cell centroids. The cell centroids are used as probing points for the Outdoor+ probing execution to ensure consistency. Both dataset consistent pairing allows to implement and calculate the values for mean bias and mean squared error as follows:
+This method computes the mentioned statistical performance metrics using all available data points in both Outdoor+ and ENVI-met resulting datasets, writing the results table as a .xlsx file for practicality. The length of both datasets is equal and corresponds to the total number of probing points obtained from the ENVI-met grid domain. Using the ENVI-met grid domain stores the values in cell centroids. The cell centroids are used as probing points for the Outdoor+ probing execution to ensure consistency. Both dataset consistent pairing allows implementing and calculating the values for mean bias and mean squared error as follows:
 
 \begin{lstlisting}[language=Python]
 mean_bias = np.mean(np.array(all_umcf_values) - np.array(all_envimet_values))
 mae = np.mean(np.abs(np.array(all_umcf_values) - np.array(all_envimet_values)))
 \end{lstlisting}
 
-The other statistical analysis component is the plot generation, using the \textit{matplotlib.pyplot} and \textit{seaborn} libraries. The plot generation uses both Outdoor+ and ENVI-met datasets to output scatter plots and timeline plots. The scatter plots reveal the overall pattern distribution of data points for both tools' results. The ideal pattern distribution is closest to the y=x line meaning there is perfect correlation. This plot provides an initial understanding of the overall agreement between both simulation results, exposing each tools' behavior for the air temperature, specific humidity, and wind speed fields.
+The other statistical analysis component is the plot generation, using the \textit{matplotlib.pyplot} and \textit{seaborn} libraries. The plot generation uses both Outdoor+ and ENVI-met datasets to output scatter plots and timeline plots. The scatter plots reveal the overall pattern distribution of data points for both tools' results. The ideal pattern distribution is closest to the y=x line, meaning there is perfect correlation. This plot provides an initial understanding of the overall agreement between both simulation results, exposing each tools' behavior for the air temperature, specific humidity, and wind speed fields.
 
-Furthermore, the timeline plots consists of a series of figures for specific data points by ID. These plots illustrate the evolution of air temperature, specific humidity, and wind speed over time for all available timesteps. Since both air temperature and specific humidity fields are informed by the \gls{epw} file, a custom boundary reader script captures the \textit{Tambient} and \textit{wambient} file information stored in the Outdoor+ case. The \textit{Tambient} and \textit{wambient} are files written by Outdoor+ according to the provided \gls{epw} file. These files include a list of lines with two values, where the left value indicates the timestep in seconds, and the right value the initial air temperature or specific humidity value for simulation. The \textit{Tambient} file is structured as follows:
+The timeline plots consists of a series of figures for specific data points by ID. These plots illustrate the evolution of air temperature, specific humidity, and wind speed over time for all available timesteps. Since both air temperature and specific humidity fields are informed by the \gls{epw} file, a custom boundary reader script captures the \textit{Tambient} and \textit{wambient} file information stored in the Outdoor+ case. The \textit{Tambient} and \textit{wambient} are files written by Outdoor+ according to the provided \gls{epw} file. These files include a list of lines with two values, where the left value indicates the time step in seconds, and the right value the initial air temperature or specific humidity value for simulation. This comparative study uses for probing point locations for both stadium and educational center case studies, as shown in \ref{fig:stadium_probingpoints} and \ref{fig:edcenter_probingpoints} below, respectively.
 
-\begin{lstlisting}[language=Python]
-(    0   299.15   )
-(    3600   301.15   )
-(    7200   302.15   )
-(    10800   304.15   )
-(    14400   305.95   )
-(    18000   305.34999999999997   )
-(    21600   304.84999999999997   )
-(    25200   303.75   )
-(    28800   304.25   )
-(    32400   304.84999999999997   )
-(    36000   303.75   )
-(    39600   302.04999999999995   )
-\end{lstlisting}
+Four probing points are selected based on qualitative criteria, defining the following categories: open area, exposed, covered, corridor, and facade. The open area probing point corresponds to an empty space surrounded by buildings in a radius of at least 5 meters. Exposed means there are no buildings or trees in a radius of 10+ meters. Covered is for probing point locations under trees. The corridor is specific for the stadium case study, where its location is bounded by two building elements. The facade specific probing point category for the educational center case study is a point in front of a building of interest.
 
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{figures/stadium_probingpoints_with_indices.jpg}
+    \caption[Stadium case study probing points by ID.]{Stadium case study probing points by ID, identified by the following naming convention: 17406 as 'open area', 22026 as 'corridor', 26383 as 'exposed', and 30395 as 'covered'.}
+    \label{fig:stadium_probingpoints}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{figures/edcenter_probingpoints_with_indices.jpg}
+    \caption[Educational center case study probing points by ID.]{Educational center case study probing points by ID, identified by the following naming convention: 14089 as 'exposed', 22076 as 'covered', 27408 as 'entrance', and 33635 as 'open area'.}
+    \label{fig:edcenter_probingpoints}
+\end{figure}
+
+\clearpage
 \section{Comparative study limitations}
 
 The current state of Outdoor+ development only includes the original urbanMicroclimateFoam regions (i.e., air region, buildings region, and vegetation region). The latest update to urbanMicroclimateFoam tutorial cases include "soil" as the soil region, which is not fully implemented in the Outdoor+ version 0.0.19-beta used in this comparative study. A non-implemented soil (terrain) region is a limitation in the urban microclimate simulation, specifically when comparing the simulation results against ENVI-met. ENVI-met includes a terrain component as well as soil as 2D layers, while Outdoor+ assumes a simplified "zeroGradient" bottom patch by default. Using a simplified bottom patch as a representation of terrain results in an incomplete urban microclimate simulation because there is no heat transfer between the terrain region and the air region.
+
+Also, this comparative study uses existing ENVI-met simulation results performed in a professional practice environment. Both ENVI-met models are used as reference settings for Outdoor+ building material properties and vegetation modeling. The ENVI-met models include results from 8AM to 7PM, without warming-up. To match Outdoor+ simulation with the ENVI-met counterpart, we only set up and run the simulation for the 8AM to 7PM time window.

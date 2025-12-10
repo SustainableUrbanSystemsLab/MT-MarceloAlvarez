@@ -277,7 +277,7 @@ Date approved: \@approvaldate
 \renewcommand{\cftchapfont}{\bfseries}  % set title font weight
 \renewcommand{\cftchappagefont}{}  % set page number font weight
 \renewcommand{\cftchappresnum}{Chapter }
-\renewcommand{\cftchapaftersnum}{:}
+\renewcommand{\cftchapaftersnum}{: }
 \renewcommand{\cftchapnumwidth}{5em}
 \renewcommand{\cftchapafterpnum}{\vskip\baselineskip} % set correct spacing for entries in single space environment
 \renewcommand{\cftsecafterpnum}{\vskip\baselineskip}  % set correct spacing for entries in single space environment

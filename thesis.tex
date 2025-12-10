@@ -1,11 +1,10 @@
-
 \documentclass[12pt]{gatechthesis}
 
 % preamble
 
-\title{Calibration and validation of Outdoor+ through urban microclimate tool comparison}
+\title{An urban microclimate comparative study \\ between Outdoor+ and ENVI-met}
 \author{Marcelo Alvarez}
-\approvaldate{January 1, 2020}
+\approvaldate{December 4, 2025}
 \school{College of Design}
 \department{School of Architecture}
 \degree{Master of Science in Architecture} 
@@ -20,6 +19,12 @@
 \usepackage{multirow}
 \usepackage{graphicx}
 \usepackage{placeins}
+\usepackage[bottom]{footmisc}
+\usepackage[export]{adjustbox}
+\usepackage{rotating}
+\usepackage{tabularx}
+
+\addbibresource{references.bib}
 
 \usepackage{listings}
 \lstset{
@@ -35,10 +40,13 @@
 % document body
 \begin{document}
 
-\makeTitlePage{Dec}{2025}
+\makeTitlePage{December}{2025}
+
 \input{approvalPage.tex}
-\makeEpigraph{Epigraph later, maybe not}{author goes here}
-\makeDedication{Dedication goes here, update later}
+
+\makeEpigraph{We become what we behold. We shape our tools, and thereafter our tools shape us.}{Marshall McLuhan}
+
+\makeDedication{For those who opened doors that shaped my path.}
 
 \begin{frontmatter}
     \input{acknowledgments}
@@ -55,7 +63,7 @@
     \input{chapters/chapter3}
     \input{chapters/chapter4}
     \input{chapters/chapter5}
-    \input{chapters/appendix.tex}
+    %\input{chapters/appendix.tex}
     \makeBibliography
 \end{thesisbody}
 
