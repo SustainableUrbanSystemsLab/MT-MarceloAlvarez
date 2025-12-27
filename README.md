@@ -1,6 +1,6 @@
 # An urban microclimate comparative study between ENVI-met and Outdoor+
 
-![graphical_abstract](graph_abstract.png)
+![graphical_abstract](https://raw.githubusercontent.com/SustainableUrbanSystemsLab/MT-MarceloAlvarez/main/graph_abstract.png)
 
 ## Overview
 
